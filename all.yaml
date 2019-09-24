@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring
+spec:
+  selector:
+    matchLabels:
+      app: spring
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: spring
+    spec:
+      containers:
+      - name: spring
+        image: spring
+        imagePullPolicy: Never
+        resources:
+          requests:
+            memory: "500Mi"
+          limits:
+            memory: "500Mi"
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 1  
+          periodSeconds: 1  
+          failureThreshold: 100
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 1  
+          periodSeconds: 1  
+          failureThreshold: 100
+        env:
+        - name: JAVA_OPTS
+          value: "${JAVA_OPTS}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring
+spec:
+  selector:
+    app: spring
+  type: NodePort
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 31888
